@@ -1,0 +1,29 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Diretórios do Node.js
+node_modules/
+dist/
+.build/
+build/
+
+# Arquivos temporários e de cache
+*.tmp
+*.cache
+
+# Arquivos de configuração de IDEs/editores
+.vscode/
+.idea/
+*.swp
+
+# Configurações do TypeScript
+*.tsbuildinfo
+
+# Configurações de ambiente
+.env
+.env.local
+.env.*.local
