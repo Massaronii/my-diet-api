@@ -1,7 +1,12 @@
 import fastify from 'fastify'
 import { dietRoutes } from './routes/diet'
+import { usersRoutes } from './routes/users'
 
 const server = fastify()
+
+server.register(usersRoutes, {
+  prefix: 'users',
+})
 
 server.register(dietRoutes, {
   prefix: 'diet',
