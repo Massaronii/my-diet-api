@@ -4,12 +4,16 @@ import { usersRoutes } from './routes/users'
 
 const server = fastify()
 
+server.addHook('onRequest', async (request) => {
+  console.log(`Método: ${request.method}, Rota: ${request.url}`)
+})
+
 server.register(usersRoutes, {
   prefix: 'users',
 })
 
 server.register(dietRoutes, {
-  prefix: 'diet',
+  prefix: 'users/diet',
 })
 
 server.listen(
