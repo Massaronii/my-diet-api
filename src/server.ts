@@ -1,12 +1,15 @@
 import fastify from 'fastify'
 import { dietRoutes } from './routes/diet'
 import { usersRoutes } from './routes/users'
+import { env } from './env'
+import cookie from '@fastify/cookie'
 
 const server = fastify()
 
 server.addHook('onRequest', async (request) => {
   console.log(`Método: ${request.method}, Rota: ${request.url}`)
 })
+server.register(cookie)
 
 server.register(usersRoutes, {
   prefix: 'users',
@@ -18,7 +21,7 @@ server.register(dietRoutes, {
 
 server.listen(
   {
-    port: 3333,
+    port: env.PORT,
   },
   (err, address) => {
     if (err) {

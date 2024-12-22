@@ -5,9 +5,21 @@ import { z } from 'zod'
 
 export async function usersRoutes(server: FastifyInstance) {
   server.get('/', async (request, reply) => {
-    const test = await knex('users').select('*')
+    const searchUsers = await knex('users').select('*')
 
-    return reply.status(200).send(test)
+    if (!searchUsers) {
+      return reply.status(400).send('Usuários não encontrados')
+    }
+
+    const users = searchUsers.map((user) => {
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      }
+    })
+
+    return reply.status(200).send(users)
   })
 
   server.post('/', async (request, reply) => {
@@ -19,18 +31,29 @@ export async function usersRoutes(server: FastifyInstance) {
 
     const { name, email, password } = createUserBodySchema.parse(request.body)
 
+    let sessionId = request.cookies.sessionId
+
+    if (!sessionId) {
+      sessionId = randomUUID()
+
+      reply.setCookie('sessionId', sessionId, {
+        maxAge: 1000 * 60 * 24 * 7,
+      })
+    }
+
     const createUser = await knex('users').insert({
       id: randomUUID(),
       name,
       email,
       password,
+      sessionId,
     })
 
-    if (createUser) {
-      return reply.status(201).send()
+    if (!createUser) {
+      return reply.status(400).send('Erro ao criar usuário')
     }
 
-    return reply.status(400).send('Erro ao criar usuário')
+    return reply.status(201).send()
   })
 
   server.delete('/:id', async (request, reply) => {
@@ -47,5 +70,33 @@ export async function usersRoutes(server: FastifyInstance) {
     }
 
     return reply.status(400).send('Erro ao deletar usuário')
+  })
+
+  server.post('/login', async (request, reply) => {
+    const loginBodySchema = z.object({
+      email: z.string(),
+      password: z.string(),
+    })
+
+    const { email, password } = loginBodySchema.parse(request.body)
+
+    if (!email || !password) {
+      return reply.status(400).send('Email e/ou senha inválidos')
+    }
+
+    const searchUser = await knex('users')
+      .where('email', email)
+      .where('password', password)
+      .first()
+
+    if (!searchUser) {
+      return reply.status(400).send('Usuário não encontrado')
+    }
+
+    reply.setCookie('sessionId', searchUser.sessionId, {
+      maxAge: 1000 * 60 * 24 * 7,
+    })
+
+    return reply.status(200).send('login realizado com sucesso')
   })
 }
